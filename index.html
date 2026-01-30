@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitFlow Pro (Final)</title>
+    <style>
+        /* --- DESIGN SYSTEM --- */
+        :root {
+            --bg: #111827;
+            --surface: #1f2937;
+            --surface-hover: #374151;
+            --primary: #8b5cf6;
+            --primary-glow: rgba(139, 92, 246, 0.4);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --radius: 12px;
+            --transition: 0.3s ease;
+        }
+
+        /* Tryb Jasny */
+        body.light-mode {
+            --bg: #f3f4f6;
+            --surface: #ffffff;
+            --surface-hover: #e5e7eb;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            transition: background-color var(--transition), color var(--transition);
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 700px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* HEADER & STATS */
+        header { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { margin: 0; font-size: 1.8rem; background: linear-gradient(to right, var(--primary), #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .global-stats {
+            background: var(--surface); padding: 15px; border-radius: var(--radius);
+            margin-bottom: 30px; display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border: 1px solid var(--surface-hover);
+        }
+        .progress-circle { width: 50px; height: 50px; border-radius: 50%; background: conic-gradient(var(--success) 0%, var(--surface-hover) 0%); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; color: var(--text-main); }
+        .stats-text { flex: 1; font-size: 0.9rem; color: var(--text-muted); }
+
+        /* FORMULARZ */
+        .add-habit-box {
+            background: var(--surface); padding: 15px; border-radius: var(--radius);
+            display: flex; gap: 10px; margin-bottom: 20px;
+            border: 1px solid var(--surface-hover);
+        }
+        input {
+            flex: 1; background: var(--bg); border: 1px solid var(--surface-hover);
+            color: var(--text-main); padding: 12px; border-radius: 8px; font-size: 1rem;
+        }
+        button {
+            background: var(--primary); color: white; border: none; padding: 0 20px;
+            border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* LISTA */
+        .habit-list { display: flex; flex-direction: column; gap: 15px; }
+        .habit-card {
+            background: var(--surface); padding: 20px; border-radius: var(--radius);
+            display: flex; flex-direction: column; gap: 15px; border: 1px solid var(--surface-hover);
+        }
+        .habit-header { display: flex; justify-content: space-between; align-items: center; }
+        .habit-name { font-weight: 600; font-size: 1.1rem; }
+        
+        /* GRID TYGODNIOWY (Zmieniony rozmiar) */
+        .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .day-column { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .day-label { font-size: 0.7rem; color: var(--text-muted); }
+        
+        .day-check {
+            width: 28px;  /* MNIEJSZY ROZMIAR */
+            height: 28px; /* MNIEJSZY ROZMIAR */
+            border-radius: 6px; 
+            background: var(--bg);
+            cursor: pointer; transition: 0.2s; border: 2px solid transparent;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .day-check.completed { background: var(--primary); box-shadow: 0 0 8px var(--primary-glow); }
+        .day-check.today { border-color: var(--text-muted); }
+        .day-check:hover { background: var(--surface-hover); }
+        .day-check.completed:hover { background: var(--primary); opacity: 0.8; }
+
+
+        /* SETTINGS PANEL */
+        .settings-panel {
+            margin-top: 50px; padding: 20px; border-top: 1px solid var(--surface-hover);
+        }
+        .settings-title { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-secondary { background: var(--surface-hover); color: var(--text-main); padding: 8px 15px; border-radius: 6px; border: none; cursor: pointer; }
+        .btn-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); padding: 8px 15px; border-radius: 6px; border: none; cursor: pointer; }
+
+        /* ANIMACJA FAJERWERKÓW */
+        .firework-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+        .particle { position: absolute; font-size: 1.5rem; animation: fall 1.5s linear forwards; opacity: 0; }
+        @keyframes fall { 0% { opacity: 1; transform: translateY(0) scale(0.5); } 100% { opacity: 0; transform: translateY(100vh) scale(1.2); } }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <h1>HabitFlow</h1>
+        <button class="btn-secondary" onclick="app.toggleTheme()">☀/🌙</button>
+    </header>
+
+    <div class="global-stats">
+        <div class="progress-circle" id="global-progress">0%</div>
+        <div class="stats-text">
+            <strong>Dzisiejsza produktywność</strong><br>
+            Zrealizowano <span id="done-count">0</span> z <span id="total-count">0</span> nawyków.
+        </div>
+    </div>
+
+    <div class="add-habit-box">
+        <input type="text" id="habit-input" placeholder="Nowy nawyk...">
+        <button onclick="app.addHabit()">Dodaj</button>
+    </div>
+
+    <div class="habit-list" id="habit-list"></div>
+
+    <div class="settings-panel">
+        <div class="settings-title">Zarządzanie Danymi (Data Management)</div>
+        <div class="btn-group">
+            <button class="btn-secondary" onclick="app.exportData()">⬇ Eksportuj JSON</button>
+            <button class="btn-secondary" onclick="document.getElementById('import-file').click()">⬆ Importuj JSON</button>
+            <input type="file" id="import-file" style="display:none" onchange="app.importData(this)">
+            <button class="btn-danger" onclick="app.clearAll()">🗑 Resetuj dane</button>
+        </div>
+        <p style="font-size:0.75rem; color:var(--text-muted); margin-top:10px;">
+            Wersja 3.0 Pro. Dane są przechowywane lokalnie.
+        </p>
+    </div>
+</div>
+
+<script>
+    const app = {
+        data: JSON.parse(localStorage.getItem('habitflow_db')) || [
+            { id: 1, name: 'Pić wodę (2L)', completedDates: [] }
+        ],
+        theme: localStorage.getItem('habitflow_theme') || 'dark',
+
+        init() {
+            if (this.theme === 'light') document.body.classList.add('light-mode');
+            this.render();
+        },
+
+        save() {
+            localStorage.setItem('habitflow_db', JSON.stringify(this.data));
+            localStorage.setItem('habitflow_theme', this.theme);
+            this.render();
+        },
+
+        // --- CORE LOGIC ---
+        getToday() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        },
+
+        getLast7Days() {
+            const days = [];
+            const labels = ['Nd','Pn','Wt','Śr','Cz','Pt','So'];
+            for(let i=6; i>=0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                days.push({ date: str, label: labels[d.getDay()], isToday: i===0 });
+            }
+            return days;
+        },
+
+        calcStreak(dates) {
+            if(!dates.length) return 0;
+            const sorted = [...dates].sort().reverse();
+            let streak = 1;
+            let current = new Date(sorted[0]);
+            
+            for(let i=1; i<sorted.length; i++) {
+                const prev = new Date(sorted[i]);
+                const diff = Math.ceil(Math.abs(current - prev) / (1000*60*60*24));
+                if(diff === 1) { streak++; current = prev; } else break;
+            }
+            return streak;
+        },
+
+        // --- ACTIONS ---
+        addHabit() {
+            const val = document.getElementById('habit-input').value.trim();
+            if(!val) return;
+            this.data.push({ id: Date.now(), name: val, completedDates: [] });
+            document.getElementById('habit-input').value = '';
+            this.save();
+        },
+
+        toggleCheck(id, dateStr) {
+            const h = this.data.find(x => x.id === id);
+            if(h.completedDates.includes(dateStr)) {
+                h.completedDates = h.completedDates.filter(d => d !== dateStr);
+            } else {
+                h.completedDates.push(dateStr);
+                // Fajerwerki co 7 dni
+                const streak = this.calcStreak(h.completedDates);
+                if(streak > 0 && streak % 7 === 0) this.triggerFireworks();
+            }
+            this.save();
+        },
+
+        deleteHabit(id) {
+            if(confirm("Usunąć?")) {
+                this.data = this.data.filter(x => x.id !== id);
+                this.save();
+            }
+        },
+
+        toggleTheme() {
+            this.theme = this.theme === 'dark' ? 'light' : 'dark';
+            document.body.classList.toggle('light-mode');
+            this.save();
+        },
+
+        // --- DATA MANAGEMENT ---
+        exportData() {
+            const dataStr = JSON.stringify(this.data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `habitflow_backup_${this.getToday()}.json`;
+            a.click();
+        },
+
+        importData(input) {
+            const file = input.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if(Array.isArray(imported)) {
+                        this.data = imported;
+                        this.save();
+                        alert("Dane zaimportowane pomyślnie!");
+                    } else throw new Error();
+                } catch(err) {
+                    alert("Błąd: Nieprawidłowy plik JSON.");
+                }
+            };
+            reader.readAsText(file);
+        },
+
+        clearAll() {
+            if(confirm("UWAGA: To usunie wszystkie dane. Kontynuować?")) {
+                this.data = [];
+                this.save();
+            }
+        },
+
+        triggerFireworks() {
+            const c = document.createElement('div');
+            c.className = 'firework-container';
+            document.body.appendChild(c);
+            ['🎆','✨','🎉','🔥'].forEach((emoji, i) => {
+                for(let j=0; j<15; j++) {
+                    const p = document.createElement('div');
+                    p.innerText = emoji; p.className = 'particle';
+                    p.style.left = Math.random()*100+'vw';
+                    p.style.animationDuration = (Math.random()*1+1)+'s';
+                    c.appendChild(p);
+                }
+            });
+            setTimeout(() => c.remove(), 2000);
+        },
+
+        // --- RENDER ---
+        render() {
+            const list = document.getElementById('habit-list');
+            list.innerHTML = '';
+            const days = this.getLast7Days();
+            const todayStr = this.getToday();
+
+            // Stats Logic
+            let totalToday = this.data.length;
+            let doneToday = this.data.filter(h => h.completedDates.includes(todayStr)).length;
+            let percent = totalToday === 0 ? 0 : Math.round((doneToday/totalToday)*100);
+            
+            document.getElementById('done-count').innerText = doneToday;
+            document.getElementById('total-count').innerText = totalToday;
+            document.getElementById('global-progress').innerText = `${percent}%`;
+            // Dynamiczny gradient dla kółka
+            document.getElementById('global-progress').style.background = 
+                `conic-gradient(var(--success) ${percent}%, var(--surface-hover) ${percent}%)`;
+
+            this.data.forEach(h => {
+                const streak = this.calcStreak(h.completedDates);
+                let grid = `<div class="week-grid">`;
+                days.forEach(d => {
+                    const isDone = h.completedDates.includes(d.date);
+                    grid += `<div class="day-column">
+                        <span class="day-label">${d.label}</span>
+                        <div class="day-check ${isDone?'completed':''} ${d.isToday?'today':''}" 
+                             onclick="app.toggleCheck(${h.id}, '${d.date}')"></div>
+                    </div>`;
+                });
+                grid += `</div>`;
+
+                const el = document.createElement('div');
+                el.className = 'habit-card';
+                el.innerHTML = `
+                    <div class="habit-header">
+                        <span class="habit-name">${h.name}</span>
+                        <div style="font-size:0.8rem; color:var(--primary)">🔥 Seria: ${streak}</div>
+                        <button onclick="app.deleteHabit(${h.id})" style="background:none; color:var(--text-muted); padding:5px; border:none; cursor:pointer;">🗑</button>
+                    </div>
+                    ${grid}
+                `;
+                list.appendChild(el);
+            });
+        }
+    };
+    app.init();
+</script>
+</body>
+</html>
