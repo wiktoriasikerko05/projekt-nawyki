@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HabitFlow Pro (Final)</title>
     <style>
-        /* --- DESIGN SYSTEM --- */
+     
         :root {
             --bg: #111827;
             --surface: #1f2937;
@@ -20,7 +20,7 @@
             --transition: 0.3s ease;
         }
 
-        /* Tryb Jasny */
+      
         body.light-mode {
             --bg: #f3f4f6;
             --surface: #ffffff;
@@ -49,7 +49,7 @@
             z-index: 10;
         }
 
-        /* HEADER & STATS */
+   
         header { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         h1 { margin: 0; font-size: 1.8rem; background: linear-gradient(to right, var(--primary), #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
@@ -62,7 +62,7 @@
         .progress-circle { width: 50px; height: 50px; border-radius: 50%; background: conic-gradient(var(--success) 0%, var(--surface-hover) 0%); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; color: var(--text-main); }
         .stats-text { flex: 1; font-size: 0.9rem; color: var(--text-muted); }
 
-        /* FORMULARZ */
+     
         .add-habit-box {
             background: var(--surface); padding: 15px; border-radius: var(--radius);
             display: flex; gap: 10px; margin-bottom: 20px;
@@ -78,7 +78,7 @@
         }
         button:hover { opacity: 0.9; transform: translateY(-1px); }
 
-        /* LISTA */
+    
         .habit-list { display: flex; flex-direction: column; gap: 15px; }
         .habit-card {
             background: var(--surface); padding: 20px; border-radius: var(--radius);
@@ -87,14 +87,14 @@
         .habit-header { display: flex; justify-content: space-between; align-items: center; }
         .habit-name { font-weight: 600; font-size: 1.1rem; }
         
-        /* GRID TYGODNIOWY (Zmieniony rozmiar) */
+        
         .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
         .day-column { display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .day-label { font-size: 0.7rem; color: var(--text-muted); }
         
         .day-check {
-            width: 28px;  /* MNIEJSZY ROZMIAR */
-            height: 28px; /* MNIEJSZY ROZMIAR */
+            width: 28px;  
+            height: 28px; 
             border-radius: 6px; 
             background: var(--bg);
             cursor: pointer; transition: 0.2s; border: 2px solid transparent;
@@ -106,7 +106,7 @@
         .day-check.completed:hover { background: var(--primary); opacity: 0.8; }
 
 
-        /* SETTINGS PANEL */
+      
         .settings-panel {
             margin-top: 50px; padding: 20px; border-top: 1px solid var(--surface-hover);
         }
@@ -115,7 +115,7 @@
         .btn-secondary { background: var(--surface-hover); color: var(--text-main); padding: 8px 15px; border-radius: 6px; border: none; cursor: pointer; }
         .btn-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); padding: 8px 15px; border-radius: 6px; border: none; cursor: pointer; }
 
-        /* ANIMACJA FAJERWERKÓW */
+       
         .firework-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
         .particle { position: absolute; font-size: 1.5rem; animation: fall 1.5s linear forwards; opacity: 0; }
         @keyframes fall { 0% { opacity: 1; transform: translateY(0) scale(0.5); } 100% { opacity: 0; transform: translateY(100vh) scale(1.2); } }
@@ -176,7 +176,7 @@
             this.render();
         },
 
-        // --- CORE LOGIC ---
+     
         getToday() {
             const d = new Date();
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -208,7 +208,7 @@
             return streak;
         },
 
-        // --- ACTIONS ---
+       
         addHabit() {
             const val = document.getElementById('habit-input').value.trim();
             if(!val) return;
@@ -243,7 +243,7 @@
             this.save();
         },
 
-        // --- DATA MANAGEMENT ---
+      
         exportData() {
             const dataStr = JSON.stringify(this.data, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
@@ -296,14 +296,14 @@
             setTimeout(() => c.remove(), 2000);
         },
 
-        // --- RENDER ---
+       
         render() {
             const list = document.getElementById('habit-list');
             list.innerHTML = '';
             const days = this.getLast7Days();
             const todayStr = this.getToday();
 
-            // Stats Logic
+         
             let totalToday = this.data.length;
             let doneToday = this.data.filter(h => h.completedDates.includes(todayStr)).length;
             let percent = totalToday === 0 ? 0 : Math.round((doneToday/totalToday)*100);
@@ -311,7 +311,7 @@
             document.getElementById('done-count').innerText = doneToday;
             document.getElementById('total-count').innerText = totalToday;
             document.getElementById('global-progress').innerText = `${percent}%`;
-            // Dynamiczny gradient dla kółka
+         
             document.getElementById('global-progress').style.background = 
                 `conic-gradient(var(--success) ${percent}%, var(--surface-hover) ${percent}%)`;
 
@@ -345,4 +345,5 @@
     app.init();
 </script>
 </body>
+
 </html>
